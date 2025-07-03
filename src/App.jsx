@@ -4,7 +4,6 @@ import Layout from './components/Layout'
 import YearbookPage from './components/YearbookPage'
 import AuthPage from './components/AuthPage'
 import TestSignIn from './components/TestSignIn'
-import './App.css'
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -54,75 +53,41 @@ const PublicRoute = ({ children }) => {
   return children
 }
 
-// Direct Bypass Component
-const DirectBypass = () => {
-  const { user, loading } = useAuth()
-  
-  if (loading) {
-    return <div className="min-h-screen bg-pepe-50 flex items-center justify-center">
-      <div className="text-center">
-        <div className="text-6xl mb-4">🐸</div>
-        <div className="text-xl">Loading...</div>
-      </div>
-    </div>
-  }
-  
-  // If user is already authenticated, redirect to home
-  if (user) {
-    return <Navigate to="/" replace />
+// Development Test Component (only in dev mode)
+const DevTestComponent = () => {
+  // Only show in development mode
+  if (!import.meta.env.DEV) {
+    return <Navigate to="/auth" replace />
   }
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yearbook-cream via-pepe-50 to-yearbook-cream flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8 text-center">
-        <div className="text-6xl mb-4">🐸</div>
-        <h1 className="text-3xl font-bold text-pepe-700 mb-4">Crypto Yearbook</h1>
-        <p className="text-gray-600 mb-6">Development Bypass Portal</p>
-        
-        <button
-          onClick={async () => {
-            // Force redirect to main app - bypass authentication entirely
-            window.location.href = '/yearbook'
-          }}
-          className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg text-lg transition-colors"
-        >
-          🚀 Enter Yearbook (Bypass Auth)
-        </button>
-        
-        <p className="text-sm text-gray-500 mt-4">
-          This bypasses authentication for development
+        <div className="text-6xl mb-4">🧪</div>
+        <h1 className="text-2xl font-bold text-gray-800 mb-4">Development Mode</h1>
+        <p className="text-gray-600 mb-6">
+          This is a development-only testing interface.
         </p>
-      </div>
-    </div>
-  )
-}
-
-// Bypass Home Component - Shows yearbook without auth
-const BypassHome = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-yearbook-cream via-pepe-50 to-yearbook-cream">
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <div className="text-6xl mb-4">🐸</div>
-          <h1 className="text-4xl font-bold text-pepe-700 mb-2">Crypto Yearbook</h1>
-          <p className="text-xl text-pepe-600">Class of 2025 - The Natives</p>
-          <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mt-4">
-            <strong>Development Mode:</strong> Authentication bypassed
-          </div>
-        </div>
         
-        <div className="max-w-4xl mx-auto">
-          <YearbookPage pageNumber={1} totalPages={5} />
-        </div>
-        
-        <div className="text-center mt-8">
+        <div className="space-y-3">
+          <button
+            onClick={() => window.location.href = '/test'}
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+          >
+            🧪 Authentication Tests
+          </button>
+          
           <button
             onClick={() => window.location.href = '/auth'}
-            className="bg-pepe-500 hover:bg-pepe-600 text-white font-bold py-2 px-4 rounded"
+            className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition-colors"
           >
-            Go to Real Auth
+            🔑 Go to Authentication
           </button>
         </div>
+        
+        <p className="text-xs text-gray-500 mt-4">
+          Development mode only - not available in production
+        </p>
       </div>
     </div>
   )
@@ -203,21 +168,17 @@ const BadgesPage = () => {
 }
 
 function App() {
-  // Check for bypass mode
-  const isBypassMode = window.location.hash === '#bypass' || window.location.pathname === '/bypass'
-  
-  if (isBypassMode && window.location.hash === '#bypass') {
-    return <BypassHome />
-  }
-  
   return (
     <Router>
       <div className="App">
-        {/* Test Route - Outside Auth Provider */}
         <Routes>
+          {/* Development Test Route - Outside Auth Provider */}
           <Route path="/test" element={<TestSignIn />} />
-          <Route path="/bypass" element={<DirectBypass />} />
-          <Route path="/yearbook" element={<BypassHome />} />
+          
+          {/* Development Landing - Only in dev mode */}
+          <Route path="/dev" element={<DevTestComponent />} />
+          
+          {/* Public Auth Route */}
           <Route path="/auth" element={
             <AuthProvider>
               <PublicRoute>
@@ -225,6 +186,8 @@ function App() {
               </PublicRoute>
             </AuthProvider>
           } />
+          
+          {/* All Protected Routes */}
           <Route path="/*" element={
             <AuthProvider>
               <Routes>
@@ -247,7 +210,7 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
-                {/* Catch all route */}
+                {/* Catch all route - redirect to home or auth */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </AuthProvider>
